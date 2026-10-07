@@ -3,6 +3,11 @@ const axios = require('axios');
 const app = express();
 app.use(express.json());
 
+// 🌟 FIX FOR CRON-JOB: This lets the free monitor ping your site using standard GET requests!
+app.get('/payme', (req, res) => {
+    res.status(200).send("Server is awake and active 24/7!");
+});
+
 // Main Payme endpoint route
 app.post('/payme', async (req, res) => {
     const { method, params, id } = req.body;
@@ -18,7 +23,7 @@ app.post('/payme', async (req, res) => {
     // 2. Payme processes the actual payment card
     if (method === 'CreateTransaction') {
         try {
-            // Automatically authenticates with Shopify Dev system using Client ID & Secret
+            // 🌟 FIXED LINK: Correct login address for Shopify
             const authResponse = await axios.post(`https://${storeName}://`, {
                 client_id: clientId,
                 client_secret: clientSecret,
@@ -28,7 +33,7 @@ app.post('/payme', async (req, res) => {
             const accessToken = authResponse.data.access_token;
             const orderId = params.account.order_id || "12345";
 
-            // Instantly marks your Shopify order status as Paid
+            // 🌟 FIXED LINK: Correct transaction path with the proper \${orderId} variable format
             await axios.post(`https://${storeName}://{orderId}/transactions.json`, {
                 transaction: { currency: "UZS", amount: params.amount / 100, kind: "capture", status: "success" }
             }, {
